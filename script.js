@@ -1,13 +1,16 @@
-let username = prompt("Enter your username:");
-const messages = [];
+const username = prompt("Enter your username:");
+const messagesList = document.getElementById("messages");
+const input = document.getElementById("messageInput");
+
+// BroadcastChannel for real-time tab communication
+const channel = new BroadcastChannel("chat_channel");
 
 function sendMessage() {
-  const input = document.getElementById("messageInput");
   const message = input.value.trim();
   if (message) {
-    const msgObj = { username, message };
-    messages.push(msgObj);
+    const msgObj = { username, message, timestamp: Date.now() };
     displayMessage(msgObj);
+    channel.postMessage(msgObj);
     input.value = "";
   }
 }
@@ -15,6 +18,10 @@ function sendMessage() {
 function displayMessage({ username, message }) {
   const li = document.createElement("li");
   li.textContent = `${username}: ${message}`;
-  document.getElementById("messages").appendChild(li);
+  messagesList.appendChild(li);
 }
-scr
+
+// Listen for messages from other tabs
+channel.onmessage = (event) => {
+  displayMessage(event.data);
+};
